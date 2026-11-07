@@ -3,18 +3,15 @@
 ## Running
 
 ```sh
-uv run pytest --cov=otel_span_lint   # tests with coverage report
-uv run python scripts/check.py      # every gate, as CI and the factory run it
+uv run pytest --cov=otel_span_lint
 ```
 
 ## Policy
 
-- Branch coverage of `src/otel_span_lint` must stay at or above 80 %; the gate fails below it.
-- Tests exercise the public API (`import otel_span_lint`) and assert every observable effect:
-  return values, raised exceptions and their messages.
-- Each bug fix starts with a failing test that reproduces it.
-- Tests are deterministic: no network, no wall clock, no dependence on test order.
+- Coverage must be at least 80%.
+- Tests must reproduce bugs before fixes are applied.
+- Tests are deterministic, relying on no external network or clock.
 
-## Layout
+## Structure
 
-`tests/test_<module>.py` mirrors each public module. Shared fixtures go in `tests/conftest.py`.
+- `tests/test_otel_span_lint.py`: Contains acceptance tests for all seven rules, CLI error paths, and edge cases like duplicates or empty spans.

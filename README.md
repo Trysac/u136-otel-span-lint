@@ -1,48 +1,58 @@
 # otel-span-lint
 
-[![PyPI version](https://img.shields.io/pypi/v/trysac-otel-span-lint)](https://pypi.org/project/trysac-otel-span-lint/)
-[![License: MIT](https://img.shields.io/pypi/l/trysac-otel-span-lint)](LICENSE)
-[![CI](https://github.com/Trysac/u136-otel-span-lint/actions/workflows/ci.yml/badge.svg)](https://github.com/Trysac/u136-otel-span-lint/actions/workflows/ci.yml)
+Lint OpenTelemetry spans from OTLP JSON against OpenTelemetry HTTP semantic conventions v1.26.0.
 
-Lint OpenTelemetry spans from OTLP JSON against a bundled table of HTTP semantic conventions v1.26.0: required, deprecated and malformed attributes
+## The Problem
 
-## Problem
+Instrumentation drifts from the OpenTelemetry semantic conventions: services still send `http.method`, forget `server.address` on client spans, or name server spans after raw URLs. This breaks dashboards and causes metric cardinality explosions. This library lints OTLP JSON exports against an explicit, bundled subset of the HTTP conventions with stable rule codes.
 
-Describe in two or three sentences the concrete problem this utility solves, who hits it, and what
-they do today without it. Replace this paragraph when the first real feature lands.
+## Installation
 
-## Install
-
-```sh
-pip install trysac-otel-span-lint
-# or
-uv add trysac-otel-span-lint
-```
-
-Requires Python 3.10 or newer. No runtime dependencies.
+`pip install trysac-otel-span-lint`
 
 ## Usage
 
 ```python
-import otel_span_lint
+from otel_span_lint import lint_document
 
-# normalize() trims surrounding whitespace and lower-cases the text.
-print(otel_span_lint.normalize("  Hello World "))  # -> "hello world"
-
-# Blank input is rejected explicitly instead of returning an empty string.
-try:
-    otel_span_lint.normalize("   ")
-except ValueError as exc:
-    print(f"rejected: {exc}")
+doc = {
+    "resourceSpans": [
+        {
+            "scopeSpans": [
+                {
+                    "spans": [
+                        {
+                            "traceId": "0123456789abcdef0123456789abcdef",
+                            "spanId": "0123456789abcdef",
+                            "name": "GET",
+                            "kind": 2,
+                            "attributes": [
+                                {"key": "http.request.method", "value": {"stringValue": "GET"}}
+                            ],
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+findings = lint_document(doc)
+for f in findings:
+    print(f.rule, f.severity, f.message)
 ```
 
-## Documentation
+## API Summary
 
-- [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/decisions/)
-- [Testing](docs/TESTING.md) and [security](docs/SECURITY.md)
-- [Project record](docs/PROJECT.md) and [stack](docs/STACK.md)
-- [Changelog](CHANGELOG.md) and [contributing guide](CONTRIBUTING.md)
+- `lint_document(doc: Mapping[str, Any], *, rules: RuleTable = DEFAULT_RULES, max_spans: int = 1_000_000) -> list[Finding]`
+- `lint_file(path: str | Path, *, rules: RuleTable = DEFAULT_RULES, max_bytes: int = 52_428_800, max_spans: int = 1_000_000) -> list[Finding]`
+- `Finding(rule: str, severity: Literal['error', 'warning'], trace_id: str, span_id: str, span_name: str, message: str)`
+- `RuleTable`: Configuration table for server/client required attributes and allowed methods.
+- `SpanLintError`: Raised for inputs that are invalid (code `invalid_document`, `invalid_json`) or exceed limits (code `input_too_large`, `too_many_spans`).
 
-## License
+## Why not manual review or Weaver?
 
-[MIT](LICENSE) (c) 2026 Miguel Gomez
+Manual review is non-deterministic and tedious. Weaver is a general-purpose semantic convention enforcement tool for the OpenTelemetry specification, but `otel-span-lint` provides a dependency-free, lightweight CI check specifically for exported JSON without requiring a complex runtime or extensive configuration.
+
+## Security
+
+See [docs/SECURITY.md](docs/SECURITY.md) for the threat model and mitigation limits.

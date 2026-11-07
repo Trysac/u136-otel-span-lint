@@ -1,21 +1,26 @@
-"""Lint OpenTelemetry spans from OTLP JSON against a bundled table of HTTP semantic conventions v1.26.0: required, deprecated and malformed attributes"""
+"""Lint OpenTelemetry spans from OTLP JSON against HTTP semantic conventions v1.26.0."""
 
 from __future__ import annotations
 
-__all__ = ["__version__", "normalize"]
+import logging
+
+from .errors import SpanLintError, SpanLintErrorCode
+from .linter import lint_document, lint_file
+from .models import Finding, Severity
+from .semconv import DEFAULT_RULES, RuleTable
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __version__ = "0.1.0"
 
-
-def normalize(value: str) -> str:
-    """Return ``value`` trimmed and lower-cased.
-
-    Placeholder API created by the template: replace it with the utility's real behavior.
-
-    Raises:
-        ValueError: if ``value`` is empty or only whitespace.
-    """
-    cleaned = value.strip()
-    if not cleaned:
-        raise ValueError("value must not be empty")
-    return cleaned.lower()
+__all__ = [
+    "DEFAULT_RULES",
+    "Finding",
+    "RuleTable",
+    "Severity",
+    "SpanLintError",
+    "SpanLintErrorCode",
+    "__version__",
+    "lint_document",
+    "lint_file",
+]
