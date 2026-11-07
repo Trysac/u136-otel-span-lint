@@ -19,6 +19,9 @@ classifiers = [
 ]
 dependencies = []
 
+[project.scripts]
+otel-span-lint = "otel_span_lint.__main__:main"
+
 [project.urls]
 Homepage = "https://github.com/Trysac/u136-otel-span-lint"
 Source = "https://github.com/Trysac/u136-otel-span-lint"

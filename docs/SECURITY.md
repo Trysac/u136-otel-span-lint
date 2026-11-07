@@ -1,19 +1,13 @@
-# Security notes
+# Security
 
-## Threat model
+## Threat Model
 
-`trysac-otel-span-lint` is a pure library without I/O. The main risks are:
+### Defended
 
-- **Supply chain**: a compromised dependency or CI action. Mitigation: no runtime dependencies,
-  Dependabot weekly updates, actions pinned to major versions, minimal workflow permissions.
-- **Leaked secrets**: tokens committed by mistake. Mitigation: `gitleaks` runs in the local gates
-  and in CI; `.env` files are git-ignored.
-- **Untrusted input**: callers may pass hostile strings. Mitigation: validate input and fail with
-  explicit exceptions; never `eval`, `exec` or deserialize untrusted data.
+1. **Denial of Service (DoS)**: Protected against resource exhaustion via file size limits (50MiB default) and span count limits (1,000,000 default).
+2. **Information Disclosure**: Error messages are truncated to 200 characters to prevent dumping sensitive attributes or trace bodies.
+3. **Memory Safety**: No arbitrary code execution; utilizes stdlib `json` for parsing.
 
-## Publishing
+### Not Defended
 
-Releases are published to PyPI with trusted publishing (OIDC) when available, never with a
-long-lived token stored in the repository.
-
-To report a vulnerability, see [SECURITY.md](../SECURITY.md).
+1. **Adversarial inputs**: The linter relies on standard JSON parsing and structure validation; it is not hardened against malicious OTLP payloads designed to induce pathological parser behavior beyond standard DoS protections.

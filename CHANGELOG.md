@@ -9,4 +9,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Add otel_span_lint utility to lint OTLP JSON spans against OpenTelemetry HTTP semantic conventions v1.26.0
 - Initial project structure from the factory utility template.

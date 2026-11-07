@@ -1,29 +1,16 @@
 # Architecture
 
-## Purpose
+## Pipeline
 
-`trysac-otel-span-lint` is a small, dependency-free Python library: Lint OpenTelemetry spans from OTLP JSON against a bundled table of HTTP semantic conventions v1.26.0: required, deprecated and malformed attributes
-
-## Shape
-
-```text
-caller code --> otel_span_lint (public API in __init__.py)
-                    |
-                    +-- pure functions, no I/O, no global state
-```
-
-- **Public API**: the names listed in `__all__` of `src/otel_span_lint/__init__.py`. Anything else is
-  internal and may change without a major version.
-- **Errors**: invalid input raises built-in exceptions (`ValueError`, `TypeError`) with a clear
-  message; the library never prints or exits.
-- **Side effects**: none. If a feature needs I/O, isolate it in its own module behind a small
-  interface and record the choice in an ADR.
-
-## Quality contract
-
-`scripts/check.py` is the single definition of the gates; `fabrica.json` tells the factory and CI
-how to run it. See [TESTING.md](TESTING.md).
-
-## Decisions
-
-Architecture decisions are recorded in [decisions/](decisions/) as numbered ADRs.
+1. **Validation**: `lint_file` checks file size against `max_bytes` (50MB default). `lint_document` checks span counts against `max_spans` (1,000,000 default).
+2. **Attribute Extraction**: Transforms OTLP list-based attribute structures into a dict. If keys duplicate, the last one wins.
+3. **Identification**: Spans are identified as HTTP when any attribute key starts with `http.`.
+4. **Rule Evaluation**: Applies seven specific rules:
+    - SPAN001: Missing required attributes (error).
+    - SPAN002: Deprecated attribute usage (warning).
+    - SPAN003: Invalid HTTP method (error).
+    - SPAN004: Invalid `http.response.status_code` (error).
+    - SPAN005: Incorrect server span name format (warning).
+    - SPAN006: Missing `error.type` on status error (warning).
+    - SPAN007: End time before start time (error).
+5. **Output**: Findings are returned as a list, ordered by document order, then rule code, then attribute key.

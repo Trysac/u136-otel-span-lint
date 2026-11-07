@@ -1,16 +1,17 @@
 # otel-span-lint
 
-> Lint OpenTelemetry spans from OTLP JSON against a bundled table of HTTP semantic conventions v1.26.0: required, deprecated and malformed attributes Python package `trysac-otel-span-lint`, import name `otel_span_lint`, MIT licensed,
-> Python >= 3.10, no runtime dependencies.
+Lint OpenTelemetry spans from OTLP JSON against HTTP semantic conventions v1.26.0. Dependency-free, Python >= 3.10.
 
-## Docs
+## Core API
 
-- [README](README.md): problem, install, usage example
-- [AGENTS](AGENTS.md): commands, folder map, conventions, limits
-- [Architecture](docs/ARCHITECTURE.md): shape of the package and its public API
-- [Testing](docs/TESTING.md): how to run and extend the tests
+- `otel_span_lint.lint_document()`
+- `otel_span_lint.lint_file()`
+- `otel_span_lint.Finding`
+- `otel_span_lint.RuleTable`
 
-## Optional
+## Documentation
 
-- [Stack](docs/STACK.md): tools used and discarded
-- [Changelog](CHANGELOG.md): release history
+- [README](README.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Testing](docs/TESTING.md)
+- [Security](docs/SECURITY.md)
